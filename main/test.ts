@@ -18,3 +18,5 @@ export type account_user = {
 export type guest_user = {
     movie_picks : [Movie, Movie, Movie]
 }
+
+//skbidi
