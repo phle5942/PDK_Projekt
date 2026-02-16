@@ -1,3 +1,6 @@
+import * as hash from "../../lib/hashtables";
+import * as lst from "../../lib/list";
+
 type Movie = number;
 // type Rating = number;
 type UserID = number;
@@ -29,3 +32,34 @@ function compare(user1: User, user2: User): Array<Movie> {
 
   return return_array;
 }
+
+
+
+function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
+
+  const hash_table = hash.ph_empty<Movie, number>(100, hash.hash_id)
+
+  // adds a list of movies to a hashtale where the value is the amount of times it has been added.
+  function add_to_hash(movie_lst: Array<Movie>): void {
+    for (let i = 0; i < movie_lst.length; i++) {
+      const amount = hash.ph_lookup(hash_table, movie_lst[i]);
+       amount == undefined ? hash.ph_insert(hash_table, movie_lst[i], 1)
+        : hash.ph_insert(hash_table, movie_lst[i], amount + 1);
+    }
+  }
+
+  return [[10, 10]];
+}
+
+// function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
+//   const return_array = Array<[Movie, number]>();
+//
+//
+//   for (let i = 0; i < user_arr.length; i++) {
+//     const comp = compare(user1, user_arr[i]);
+//     if (comp.length > 0 && comp.length < 5) {
+//       for (let j = 0; j < comp.length; j++) {
+//         if(comp[j] ) {
+//     }
+//   }
+// }
