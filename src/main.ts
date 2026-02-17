@@ -5,7 +5,6 @@ type Movie = number;
 // type Rating = number;
 type UserID = number;
 
-console.log("Hello, world!");
 
 type User = {
   id: number,
@@ -33,6 +32,8 @@ function compare(user1: User, user2: User): Array<Movie> {
   return return_array;
 }
 
+
+//alsmdakslnds
 
 
 function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
