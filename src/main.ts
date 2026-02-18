@@ -1,13 +1,13 @@
 import * as hash from "../../lib/hashtables";
 import * as lst from "../../lib/list";
 
-type Movie = number;
+export type Movie = number;
 // type Rating = number;
-type UserID = number;
+export type UserID = number;
 
 console.log("Hello, world!");
 
-type User = {
+export type User = {
   id: number,
   movie_list: Array<Movie>
 }
@@ -35,23 +35,34 @@ function compare(user1: User, user2: User): Array<Movie> {
 
 
 
-function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
+export function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
 
-  const hash_table = hash.ph_empty<Movie, number>(100, hash.hash_id)
-
-  // adds a list of movies to a hashtale where the value is the amount of times it has been added.
-  function add_to_hash(movie_lst: Array<Movie>): void {
-    for (let i = 0; i < movie_lst.length; i++) {
-      const amount = hash.ph_lookup(hash_table, movie_lst[i]);
-       amount == undefined ? hash.ph_insert(hash_table, movie_lst[i], 1)
-        : hash.ph_insert(hash_table, movie_lst[i], amount + 1);
+  //  checks if element is already in list
+  //  if is member, increments number
+  function add_to_arr(movie: Movie, movie_arr: Array<[Movie, number]>): void {
+    for (let i = 0; i < movie_arr.length; i++) {
+      if(movie === movie_arr[i][0]) {
+        movie_arr[i][1] = movie_arr[i][1] + 1;
+        return;
+      }
     }
+    movie_arr.push([movie, 1]);
   }
 
-  return [[10, 10]];
+  const return_array = Array<[Movie, number]>();
+
+  for (let i = 0; i < user_arr.length; i++) {
+    const differenbt_movies = compare(user1, user_arr[i]);
+    if (differenbt_movies.length > 0 && differenbt_movies.length < 5) {
+      for (let j = 0; j < differenbt_movies.length; j++) {
+        add_to_arr(differenbt_movies[j], return_array);
+      }
+    }
+  }
+  
+  return return_array.sort((a, b) => b[1] - a[1]);
 }
 
-// function get_movie_arr(user1: User, user_arr: Array<User>): Array<[Movie, number]> {
 //   const return_array = Array<[Movie, number]>();
 //
 //
