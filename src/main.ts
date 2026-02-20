@@ -17,7 +17,8 @@ export type User = number;
 
 
 
-function similarityScore(input: Array<Movie>, movieArr: MovieArray): number { 
+function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined): number { 
+  if ( movieArr == undefined ) { return 0; }
   let relevantMoviesWatched = 0;
   let totalRating = 0;
 
@@ -40,60 +41,102 @@ function assign_weight(similarity: number, rating: number): number {
 const userMovieTable = hash.ph_empty<User, MovieArray>(610, hash.hash_id);
 
 /// init hashtable for movie and score
-const movieScoreTable = hash.ph_empty<Movie, number>(100, hash.hash_id);
+const movieScoreTable = hash.ph_empty<Movie, number>(1000, hash.hash_id);
+// init hashtable for keeping trrack of users similarity score
+const simTable = hash.ph_empty<User, number>(610, hash.hash_id);
 
 // temproray inout movies for testing
 const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
 
 
 ///////////////////////////////////////////////////7
-function getRelevantUsers(movies: Array<Movie>, func: () => void): void {
-  // set boolean to keep track of relevant users
-  let hasSeen = false;
+function getRelevantUsers(movies: Array<Movie>): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // set boolean to keep track of relevant users
+    let hasSeen = false;
 
-  // keep track of current user, this assumes the file is sorted with regards to users
-  let currentUser: User = -1;
-  let currentUserArray: MovieArray = [];
+    // keep track of current user, this assumes the file is sorted with regards to users
+    let currentUser: User = -1;
+    let currentUserArray: MovieArray = [];
 
-  fs.createReadStream("../ml-latest-small/ratings.csv")
-    .pipe(csv())
-    .on("data", (row) => {
-      const user: User = Number(row.userId);
-      const movie: Movie = Number(row.movieId);
-      const rating: Rating = Number(row.rating);
+    fs.createReadStream("../ml-latest-small/ratings.csv")
+      .pipe(csv())
+      .on("data", (row) => {
+        const user: User = Number(row.userId);
+        const movie: Movie = Number(row.movieId);
+        const rating: Rating = Number(row.rating);
 
-      // when coming across new user, check if last user is relevant or not
-      if (user !== currentUser && user !== -1) {
-        if (hasSeen) {
+        // when coming across new user, check if last user is relevant or not
+        if (user !== currentUser && user !== -1) {
+          if (hasSeen) {
+            hash.ph_insert(userMovieTable, currentUser, currentUserArray);
+          }
+          hasSeen = false;
+          currentUserArray = [];
+        }
+
+        // sets currentuser and pushes movies to temp array
+        currentUser = user;
+          currentUserArray.push({ movie, rating })
+
+        // sets true if user has seen one of the input movies
+        if (movies.includes(movie)) { hasSeen = true; }
+
+      })
+      .on("end", () => {
+        // adds the last user
+        if(hasSeen) {
           hash.ph_insert(userMovieTable, currentUser, currentUserArray);
         }
-        hasSeen = false;
-        currentUserArray = [];
-      }
-
-      // sets currentuser and pushes movies to temp array
-      currentUser = user;
-      currentUserArray.push({ movie, rating })
-
-      // sets true if user has seen one of the input movies
-      if (movies.includes(movie)) { hasSeen = true; }
-       
-
-    })
-    .on("end", () => {
-      // adds the last user
-      if(hasSeen) {
-        hash.ph_insert(userMovieTable, currentUser, currentUserArray);
-      }
-      func();
-    })
+        resolve();
+      })
+      .on("error", reject);
+  });
 }
+  
 
-getRelevantUsers(inputMovies, () => {
-  const lst = hash.ph_keys(userMovieTable);
+async function main() {
+  await getRelevantUsers(inputMovies);
+  console.log(userMovieTable);
+  const keys = hash.ph_keys(userMovieTable);
 
-  list.for_each((key => console.log(hash.ph_lookup(userMovieTable, key))), lst);
-});
-// console.log(userMovieTable);
+  // computes and adds imilarity scores for each user to simTable
+  list.for_each((key) => {
+    const m_array: MovieArray | undefined = hash.ph_lookup(userMovieTable, key);
+    hash.ph_insert(simTable, key, similarityScore(inputMovies, m_array));
+  }, keys);
+
+  // console.log(list.length(hash.ph_keys(simTable)) === list.length(hash.ph_keys(userMovieTable)));
+
+  list.for_each((key) => {
+    const simScore = hash.ph_lookup(simTable, key);
+    const movie_arr = hash.ph_lookup(userMovieTable, key);
+
+    for (let i = 0; i < movie_arr!.length; i = i + 1) {
+      const currentMovie = movie_arr![i].movie;
+      const rating = movie_arr![i].rating;
+      const vote = assign_weight(simScore!, rating);
+
+      const prevScore = hash.ph_lookup(movieScoreTable, currentMovie);
+      if (prevScore !== undefined) {
+        hash.ph_insert(movieScoreTable, currentMovie, prevScore + vote)
+      } else {
+        hash.ph_insert(movieScoreTable, currentMovie, vote);
+      }
+    }
+  }, keys)
+
+
+  const m_keys = hash.ph_keys(movieScoreTable);
+  const result_array: Array<[Movie, number]> = []
+
+  list.for_each((key) => {
+    result_array.push([key, hash.ph_lookup(movieScoreTable, key)!]);
+  }, m_keys)
+
+  result_array.sort((a, b) => b[1] - a[1]);
+  console.log(result_array);
+}
+main();
 
 console.log("hej");
