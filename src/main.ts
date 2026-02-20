@@ -1,28 +1,78 @@
+import * as list from "../../lib/list"
+import * as hash from "../../lib/hashtables"
 import * as fs from "fs"
 import * as csv from "csv-parser"
 
-export type User = {
-  id: number;
-  movie_list: Array<{ movie_id: number; rating: number }>;
-  similarity_score?: number;
-}
+export type MovieArray = Array<{
+  movie: Movie;
+  rating: Rating;
+}>
 
-export type Movie = {
-  id: number;
-  movie_name: string;
-  user_list: Array<{ user_id: number; rating: number }>;
-}
+export type Movie = number;
+export type Rating = number;
 
-const similarUsers = new Set<User>();
-const move_set = new Set<Movie>();
-const mainUserMovies = new Set<Movie>();
+export type User = number;
 
-function similarityScore(main_user: User, other_user: User): number {
-  
-}
 
+
+
+
+function similarityScore(main_user: User, other_user: User): number { return 1; }
+
+// Returns how much a specific users "vote" counts.
 function assign_weight(similarity: number, rating: number): number { return 1; }
 
-function get_relevant_users(main_user: User): Array<User> {
- return [];
+// init hashtable
+const userMovieTable = hash.ph_empty<User, MovieArray>(610, hash.hash_id)
+
+const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
+
+hash.ph_insert(userMovieTable, 1, [{movie: 2 ,rating: 3}]);
+
+function getRelevantUsers(movies: Array<Movie>, callback: () => void): void {
+  // set boolean to keep track of relevant users
+  let hasSeen = false;
+
+  // keep track of current user, this assumes the file is sorted with regards to users
+  let currentUser: User = -1;
+  let currentUserArray: MovieArray = [];
+
+  fs.createReadStream("../ml-latest-small/ratings.csv")
+    .pipe(csv())
+    .on("data", (row) => {
+      const user: User = Number(row.userId);
+      const movie: Movie = Number(row.movieId);
+      const rating: Rating = Number(row.rating);
+
+      if (user !== currentUser && user !== -1) {
+        if (hasSeen) {
+          hash.ph_insert(userMovieTable, currentUser, currentUserArray);
+          console.log(currentUser);
+          console.log(currentUserArray);
+        }
+        hasSeen = false;
+        currentUserArray = [];
+      }
+      currentUser = user;
+      currentUserArray.push({ movie, rating })
+
+      if (movies.includes(movie)) { hasSeen = true; }
+       
+
+    })
+    .on("end", () => {
+      if(hasSeen) {
+        hash.ph_insert(userMovieTable, currentUser, currentUserArray);
+      }
+      callback();
+    })
 }
+
+getRelevantUsers(inputMovies, () => {
+  const lst = hash.ph_keys(userMovieTable);
+
+  list.for_each((key => console.log(hash.ph_lookup(userMovieTable, key))), lst);
+});
+// console.log(userMovieTable);
+
+
