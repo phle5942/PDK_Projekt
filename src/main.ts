@@ -44,6 +44,8 @@ const userMovieTable = hash.ph_empty<User, MovieArray>(610, hash.hash_id);
 const movieScoreTable = hash.ph_empty<Movie, number>(1000, hash.hash_id);
 // init hashtable for keeping trrack of users similarity score
 const simTable = hash.ph_empty<User, number>(610, hash.hash_id);
+// init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
+const movieCount = hash.ph_empty<Movie, number>(1000, hash.hash_id);
 
 // temproray inout movies for testing
 const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
@@ -118,12 +120,12 @@ async function main() {
       const vote = assign_weight(simScore!, rating);
 
       const prevScore = hash.ph_lookup(movieScoreTable, currentMovie);
-      if (prevScore !== undefined) {
-        hash.ph_insert(movieScoreTable, currentMovie, prevScore + vote)
-      } else {
-        hash.ph_insert(movieScoreTable, currentMovie, vote);
+        hash.ph_insert(movieScoreTable, currentMovie, (prevScore ?? 0) + vote);
+
+      const prevCount = hash.ph_lookup(movieCount, currentMovie);
+        hash.ph_insert(movieCount, currentMovie, (prevCount ?? 0) + 1);
+      
       }
-    }
   }, keys)
 
 
@@ -131,7 +133,9 @@ async function main() {
   const result_array: Array<[Movie, number]> = []
 
   list.for_each((key) => {
-    result_array.push([key, hash.ph_lookup(movieScoreTable, key)!]);
+    const score = hash.ph_lookup(movieScoreTable, key);
+    const count = hash.ph_lookup(movieCount, key);
+    result_array.push([key, score! / count!]);
   }, m_keys)
 
   result_array.sort((a, b) => b[1] - a[1]);
