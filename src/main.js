@@ -64,6 +64,8 @@ var userMovieTable = hash.ph_empty(610, hash.hash_id);
 var movieScoreTable = hash.ph_empty(1000, hash.hash_id);
 // init hashtable for keeping trrack of users similarity score
 var simTable = hash.ph_empty(610, hash.hash_id);
+// init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
+var movieCount = hash.ph_empty(1000, hash.hash_id);
 // temproray inout movies for testing
 var inputMovies = [1, 4, 7, 12, 54];
 ///////////////////////////////////////////////////7
@@ -130,18 +132,17 @@ function main() {
                             var rating = movie_arr[i].rating;
                             var vote = assign_weight(simScore, rating);
                             var prevScore = hash.ph_lookup(movieScoreTable, currentMovie);
-                            if (prevScore !== undefined) {
-                                hash.ph_insert(movieScoreTable, currentMovie, prevScore + vote);
-                            }
-                            else {
-                                hash.ph_insert(movieScoreTable, currentMovie, vote);
-                            }
+                            hash.ph_insert(movieScoreTable, currentMovie, (prevScore !== null && prevScore !== void 0 ? prevScore : 0) + vote);
+                            var prevCount = hash.ph_lookup(movieCount, currentMovie);
+                            hash.ph_insert(movieCount, currentMovie, (prevCount !== null && prevCount !== void 0 ? prevCount : 0) + 1);
                         }
                     }, keys);
                     m_keys = hash.ph_keys(movieScoreTable);
                     result_array = [];
                     list.for_each(function (key) {
-                        result_array.push([key, hash.ph_lookup(movieScoreTable, key)]);
+                        var score = hash.ph_lookup(movieScoreTable, key);
+                        var count = hash.ph_lookup(movieCount, key);
+                        result_array.push([key, score / count]);
                     }, m_keys);
                     result_array.sort(function (a, b) { return b[1] - a[1]; });
                     console.log(result_array);
