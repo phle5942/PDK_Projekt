@@ -5,6 +5,8 @@ import {main} from "./main.ts"
 import { id_to_name } from "./id_to_movie_name.ts";
 const rl = readline.createInterface({ input, output });
 
+
+// skriv npx ts-node --esm ./src/interface.ts i högst roten för att köra
 async function main_interface() {
   console.log("Welcome, select 5 movies");
 
