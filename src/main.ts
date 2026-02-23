@@ -1,7 +1,8 @@
-import * as list from "../../lib/list"
-import * as hash from "../../lib/hashtables"
-import * as fs from "fs"
-import * as csv from "csv-parser"
+import * as list from "../../lib/list.js"
+import * as hash from "../../lib/hashtables.js"
+import fs from "fs"
+import csv from "csv-parser"
+
 
 export type MovieArray = Array<{
   movie: Movie;
@@ -12,10 +13,6 @@ export type Movie = number;
 export type Rating = number;
 
 export type User = number;
-
-
-
-
 
 function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined): number { 
   if ( movieArr == undefined ) { return 0; }
@@ -46,7 +43,7 @@ const movieScoreTable = hash.ph_empty<Movie, number>(1000, hash.hash_id);
 const simTable = hash.ph_empty<User, number>(610, hash.hash_id);
 
 // temproray inout movies for testing
-const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
+//const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
 
 
 ///////////////////////////////////////////////////7
@@ -59,7 +56,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
     let currentUser: User = -1;
     let currentUserArray: MovieArray = [];
 
-    fs.createReadStream("../ml-latest-small/ratings.csv")
+    fs.createReadStream("ml-latest-small/ratings.csv")
       .pipe(csv())
       .on("data", (row) => {
         const user: User = Number(row.userId);
@@ -95,9 +92,9 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 }
   
 
-async function main() {
+export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, number]>>{
   await getRelevantUsers(inputMovies);
-  console.log(userMovieTable);
+  //console.log(userMovieTable);
   const keys = hash.ph_keys(userMovieTable);
 
   // computes and adds imilarity scores for each user to simTable
@@ -135,8 +132,8 @@ async function main() {
   }, m_keys)
 
   result_array.sort((a, b) => b[1] - a[1]);
-  console.log(result_array);
+  return result_array;
 }
-main();
+//main();
 
-console.log("hej");
+//console.log("hej");
