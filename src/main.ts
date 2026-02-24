@@ -44,9 +44,6 @@ const simTable = hash.ph_empty<User, number>(610, hash.hash_id);
 // init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
 const movieCount = hash.ph_empty<Movie, number>(1000, hash.hash_id);
 
-// temproray inout movies for testing
-//const inputMovies: Array<Movie> = [1, 4, 7, 12, 54];
-
 
 ///////////////////////////////////////////////////7
 function getRelevantUsers(movies: Array<Movie>): Promise<void> {
@@ -58,7 +55,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
     let currentUser: User = -1;
     let currentUserArray: MovieArray = [];
 
-    fs.createReadStream("ml-latest-small/ratings.csv")
+    fs.createReadStream(".gitignore/ml-latest-small/ratings.csv")
       .pipe(csv())
       .on("data", (row) => {
         const user: User = Number(row.userId);
@@ -96,7 +93,6 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 
 export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, number]>>{
   await getRelevantUsers(inputMovies);
-  //console.log(userMovieTable);
   const keys = hash.ph_keys(userMovieTable);
 
   // computes and adds imilarity scores for each user to simTable
@@ -105,7 +101,6 @@ export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, nu
     hash.ph_insert(simTable, key, similarityScore(inputMovies, m_array));
   }, keys);
 
-  // console.log(list.length(hash.ph_keys(simTable)) === list.length(hash.ph_keys(userMovieTable)));
 
   list.for_each((key) => {
     const simScore = hash.ph_lookup(simTable, key);

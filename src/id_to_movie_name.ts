@@ -8,7 +8,7 @@ export async function id_to_name(movie_id : number) : Promise<ReturnResult | und
 
   return new Promise((resolve) => {
     
-    const stream = fs.createReadStream("ml-latest-small/movies.csv")
+    const stream = fs.createReadStream(".gitignore/ml-latest-small/movies.csv")
       .pipe(csv())
       .on("data", (row) => { 
         const id: number = Number(row.movieId);
