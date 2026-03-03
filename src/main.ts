@@ -60,7 +60,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
     let currentUser: User = -1;
     let currentUserArray: MovieArray = [];
 
-    fs.createReadStream("data/ml-latest/ratings.csv")
+    fs.createReadStream("../ml-latest/ratings.csv")
       .pipe(csv())
       .on("data", (row) => {
         const user: User = Number(row.userId);
