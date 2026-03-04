@@ -4,7 +4,7 @@ import fs from "fs"
 import csv from "csv-parser"
 
 /////TODO
-//Funktionsspec, testcases, hashfunktion, rapport, diary, 
+//Funktionsspec, testcases, hashfunktion, rapport, diary, fixa libs
 
 export type MovieArray = Array<{
   movie: Movie;
@@ -29,7 +29,7 @@ function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined):
       totalRating = totalRating + (movieArr[i].rating - 2.5);
     }
   }
-
+  if(relevantMoviesWatched === 0) return 0;
   return (totalRating / relevantMoviesWatched) * relevantMoviesWatched ** 0.5; 
 }
 
@@ -53,7 +53,6 @@ const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 function getRelevantUsers(movies: Array<Movie>): Promise<void> {
   return new Promise((resolve, reject) => {
     // set boolean to keep track of relevant users
-    let hasSeen = false;
     let counter = 0;
 
     // keep track of current user, this assumes the file is sorted with regards to users
@@ -85,7 +84,6 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
         for(let i = 0; i < movies.length; i = i + 1) {
           if(movies[i] === movie) counter = counter + 1;
         }
-        //if (movies.includes(movie)) { hasSeen = true; }
 
       })
       .on("end", () => {
