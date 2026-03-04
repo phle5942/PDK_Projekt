@@ -1,5 +1,5 @@
 
-import fs from "fs"
+import * as fs from "node:fs"
 import csv from "csv-parser"
 export type Movie = number;
 type ReturnResult = {movie_title : string, movie_genres : string};
@@ -10,7 +10,7 @@ export async function id_to_name(movie_id : number) : Promise<ReturnResult | und
     
     const stream = fs.createReadStream("../ml-latest/movies.csv")
       .pipe(csv())
-      .on("data", (row) => { 
+      .on("data", (row : {movieId : string, title : string, genres : string}) => { 
         const id: number = Number(row.movieId);
         if(movie_id === id) { 
             

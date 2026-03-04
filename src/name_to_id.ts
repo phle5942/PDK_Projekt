@@ -1,5 +1,5 @@
 
-import fs from "fs"
+import * as fs from "node:fs"
 import csv from "csv-parser"
 export type Movie = number;
 type MovieResult = {movie_id : Movie, movie_title : string, movie_genres : string};
@@ -10,7 +10,7 @@ export async function name_to_id(movie_name : string) : Promise<MovieResult | un
     
     const stream = fs.createReadStream("../ml-latest/movies.csv")
       .pipe(csv())
-      .on("data", (row) => { 
+      .on("data", (row : {movieId : string, title : string, genres : string}) => { 
         const title: string = String(row.title);
         if(title.toLowerCase().replace(/[^a-zA-Z0-9åäö]/gi, "").includes(movie_name.toLowerCase().replace(/[^a-zA-Z0-9åäö]/gi, "")) || 
           movie_name.toLowerCase().replace(/[^a-zA-Z0-9åäö]/gi, "").includes(title.toLowerCase().replace(/[^a-zA-Z0-9åäö]/gi, ""))) { // ev. att vi hämtar en fuzzy-match lib

@@ -1,10 +1,10 @@
-import * as list from "../../lib/list.js"
-import * as hash from "../../lib/hashtables.js"
-import fs from "fs"
+import * as list from "../lib/list"
+import * as hash from "../lib/hashtables"
+import * as fs from "fs"
 import csv from "csv-parser"
 
 /////TODO
-//Funktionsspec, testcases, hashfunktion, rapport, diary, fixa libs
+//Funktionsspec, testcases, hashfunktion, rapport, diary
 
 export type MovieArray = Array<{
   movie: Movie;
@@ -61,7 +61,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 
     fs.createReadStream("../ml-latest/ratings.csv")
       .pipe(csv())
-      .on("data", (row) => {
+      .on("data", (row : {userId : number, movieId : number, rating : number}) => {
         const user: User = Number(row.userId);
         const movie: Movie = Number(row.movieId);
         const rating: Rating = Number(row.rating);

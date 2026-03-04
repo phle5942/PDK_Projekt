@@ -1,8 +1,8 @@
-import readline from "node:readline/promises";
+import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { name_to_id } from "./name_to_id.ts";
-import {main} from "./main.ts"
-import { id_to_name } from "./id_to_movie_name.ts";
+import { name_to_id } from "./name_to_id";
+import {main} from "./main"
+import { id_to_name } from "./id_to_movie_name";
 const rl = readline.createInterface({ input, output });
 
 
@@ -37,13 +37,14 @@ async function main_interface() {
         const final_movie = await id_to_name(recommended_movies[i][0]);
         const answer = await r2.question(`Wadduya say about ${final_movie?.movie_title},  (y/n)`);
         if(answer === "y") {
-            return;
+            break;
         } else {
             i = i + 1;
             continue;
         }
 
     }
+    return;
 }
 
 main_interface();
