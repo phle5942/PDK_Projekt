@@ -6,9 +6,9 @@ type MovieResult = {movie_id : Movie, movie_title : string, movie_genres : strin
 //gets a movie string and returns the movie from the csv if it exists
 export async function name_to_id(movie_name : string) : Promise<MovieResult | undefined>{
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     
-    const stream = fs.createReadStream(".gitignore/ml-latest-small/movies.csv")
+    const stream = fs.createReadStream("../ml-latest/movies.csv")
       .pipe(csv())
       .on("data", (row) => { 
         const title: string = String(row.title);

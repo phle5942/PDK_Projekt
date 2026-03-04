@@ -29,7 +29,7 @@ async function main_interface() {
             continue;
         }
     }
-  
+    console.log("Please wait, calculating...")
     const recommended_movies = await main(movies);
     let i = 0;
     const r2 = readline.createInterface({ input, output });
@@ -37,7 +37,7 @@ async function main_interface() {
         const final_movie = await id_to_name(recommended_movies[i][0]);
         const answer = await r2.question(`Wadduya say about ${final_movie?.movie_title},  (y/n)`);
         if(answer === "y") {
-            break;
+            return;
         } else {
             i = i + 1;
             continue;
