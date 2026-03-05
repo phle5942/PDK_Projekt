@@ -49,8 +49,19 @@ const simTable = hash.ph_empty<User, number>(330975, hash.hash_id);
 const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 
 
-///////////////////////////////////////////////////7
-function getRelevantUsers(movies: Array<Movie>): Promise<void> {
+///////////////////////////////////////////////////
+ /* param 
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  */
+function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: number): Promise<void> {
   return new Promise((resolve, reject) => {
     // set boolean to keep track of relevant users
     let counter = 0;
@@ -59,7 +70,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
     let currentUser: User = -1;
     let currentUserArray: MovieArray = [];
 
-    fs.createReadStream("../ml-latest/ratings.csv")
+    fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row : {userId : number, movieId : number, rating : number}) => {
         const user: User = Number(row.userId);
@@ -68,7 +79,7 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 
         // when coming across new user, check if last user is relevant or not
         if (user !== currentUser && user !== -1) {
-          if (counter >= 3) {
+          if (counter >= minNumber) {
             hash.ph_insert(userMovieTable, currentUser, currentUserArray);
           }
           //hasSeen = false;
@@ -98,8 +109,8 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 }
   
 
-export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, number]>>{
-  await getRelevantUsers(inputMovies);
+export async function main(inputMovies: Array<Movie>, filePath: string, minNumber: number) : Promise<Array<[Movie, number]>>{
+  await getRelevantUsers(inputMovies, filePath, minNumber);
   const keys = hash.ph_keys(userMovieTable);
 
   // computes and adds imilarity scores for each user to simTable

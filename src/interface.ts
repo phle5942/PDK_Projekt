@@ -30,7 +30,7 @@ async function main_interface() {
         }
     }
     console.log("Please wait, calculating...")
-    const recommended_movies = await main(movies);
+    const recommended_movies = await main(movies, "../ml-latest/ratings.csv", 3);
     let i = 0;
     const r2 = readline.createInterface({ input, output });
     while(recommended_movies.length > i) {
