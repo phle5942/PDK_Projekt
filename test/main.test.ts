@@ -19,7 +19,9 @@ import { main, Movie, User } from "../src/main"
 //   [6, 2],
 //   [7, 2],
 //   [8, 1],
-//   [9, 1],
+//   [9,
+//
+//   1],
 //   [10, 1],
 //   [13, 1],
 //   [14, 1],
@@ -29,3 +31,19 @@ import { main, Movie, User } from "../src/main"
 // test('', () => {
 //   expect().toEqual(expectedResult);
 // });
+//
+
+const filePath = "./small_set.csv"
+const input = [1, 2];
+const expectedResult = [[3, 7.07], [4, 7.07]];
+test('small dataset', async () => {
+  const result = await main(input, filePath, 2);
+
+  expect(result.length).toBe(expectedResult.length);
+
+  for (let i = 0; i < expectedResult.length; i = i + 1) {
+    expect(result[i][0]).toBe(expectedResult[i][0]);
+    expect(result[i][1]).toBeCloseTo(expectedResult[i][1], 2);
+
+  }
+});
