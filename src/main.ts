@@ -97,7 +97,11 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
   });
 }
   
-
+/**
+ * 
+ * @param inputMovies 
+ * @returns 
+ */
 export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, number]>>{
   await getRelevantUsers(inputMovies);
   const keys = hash.ph_keys(userMovieTable);
