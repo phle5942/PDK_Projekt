@@ -50,16 +50,18 @@ const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 
 
 ///////////////////////////////////////////////////
- /* param 
+/** 
+  * Takes the data from s CSV file of the format userId, movieId, rating
+  * and inputs all the users that have watched at least a certain number of the inputed movies
+  * and adds them to a hashtable, where key is userId and value is { movie, rating }
   *
+  * @param { Array<Movie> } movies - array of input movies
+  * @param { string } filePath - path to csv file containg data
+  * @param { number } minNumber - amount of movies a user has to have watched 
+  *   to get added to the hashtable
   *
-  *
-  *
-  *
-  *
-  *
-  *
-  *
+  * @precondition csv file is sorted by userId
+  * @complexity Theta(n), where n is length of CSV file
   */
 function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: number): Promise<void> {
   return new Promise((resolve, reject) => {
