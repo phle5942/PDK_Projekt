@@ -16,8 +16,11 @@ export type Rating = number;
 
 export type User = number;
 
-
-//
+/**
+ * Computes the similarity score a dataset user. Based on how many of the main users movies the data set user 
+ * has seen and the rating they have given the movies. The score both determines whether the data set user
+ * is similar and different in movie taste to the main user. 
+ */
 function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined): number { 
   if ( movieArr == undefined ) { return 0; }
   let relevantMoviesWatched = 0;
@@ -40,7 +43,6 @@ function assign_weight(similarity: number, rating: number): number {
 
 // init hashtable for relevant users
 const userMovieTable = hash.ph_empty<User, MovieArray>(330975, hash.hash_id);
-
 /// init hashtable for movie and score
 const movieScoreTable = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 // init hashtable for keeping trrack of users similarity score
@@ -48,10 +50,8 @@ const simTable = hash.ph_empty<User, number>(330975, hash.hash_id);
 // init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
 const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 
-
-///////////////////////////////////////////////////
 /** 
-  * Takes the data from s CSV file of the format userId, movieId, rating
+  * Takes the data from a CSV file of the format userId, movieId, rating
   * and inputs all the users that have watched at least a certain number of the inputed movies
   * and adds them to a hashtable, where key is userId and value is { movie, rating }
   *
@@ -118,9 +118,9 @@ function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: num
  * based on the similarity between the user and the dataset user and the data set user's personal 
  * movie rating, calculating a relative score.
  * 
- * @param inputMovies array of movies
- * @param filePath string of a file path to a dataset with user ratings of movies
- * @param minNumber number of movies a dataset user has to have in common to be deemed relevant
+ * @param {Array<Movie>} inputMovies array of input movies
+ * @param {string} filePath path to csv file containg data
+ * @param {number} minNumber number of movies a dataset user has to have in common to be deemed relevant
  * @precondition 0 <= minNumber <= inputMovies.length
  * @precondition filePath must link to a dataset with rows: userId, movieId, rating
  * @precondition dataset must have descending order considering the userId

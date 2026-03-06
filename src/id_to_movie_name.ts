@@ -3,12 +3,19 @@ import * as fs from "node:fs"
 import csv from "csv-parser"
 export type Movie = number;
 type ReturnResult = {movie_title : string, movie_genres : string};
-//gets a movie id and returns the movie name from the csv 
-export async function id_to_name(movie_id : number) : Promise<ReturnResult | undefined>{
+/**
+ * When given a movie id, returns either a record of a movie_title and movie_genres correlating to the id in
+ *  the csv file, or undefined if the id does not match a movie. 
+ * @param {number} movie_id - the id of the movie searched for
+ * @preconditions movie_id >= 0
+ * @returns {Promise<ReturnResult | undefined>} - returns either a record of a movie_title and movie_genres correlating to the id in
+ *  the csv file, or undefined if the id does not match a movie.
+ */
+export async function id_to_name(movie_id : number, path : string) : Promise<ReturnResult | undefined>{
 
   return new Promise((resolve) => {
     
-    const stream = fs.createReadStream("../ml-latest/movies.csv")
+    const stream = fs.createReadStream(path)
       .pipe(csv())
       .on("data", (row : {movieId : string, title : string, genres : string}) => { 
         const id: number = Number(row.movieId);

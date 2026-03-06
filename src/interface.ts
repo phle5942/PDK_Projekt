@@ -4,7 +4,11 @@ import { name_to_id } from "./name_to_id";
 import {main} from "./main"
 import { id_to_name } from "./id_to_movie_name";
 
-async function main_interface() {
+/**
+ * Function that, once called upon, initiates a terminal interface where a user submits five movies and 
+ * recieves movies based on the movies submitted.
+ */
+async function main_interface(movies_path : string, ratings_path : string) {
     
 const rl = readline.createInterface({ input, output });
 
@@ -14,7 +18,7 @@ const rl = readline.createInterface({ input, output });
     let x = 0;
     while(x < 5) {
         const answer = await rl.question("Select : ");
-        const movie = await name_to_id(answer);
+        const movie = await name_to_id(answer, movies_path);
         if(movie !== undefined) {
             console.log(movie);
             const yesorno = await rl.question(`Is this the right movie? (y/n)`);
@@ -31,11 +35,11 @@ const rl = readline.createInterface({ input, output });
     }
     
     console.log("Please wait, calculating...")
-    const recommended_movies = await main(movies, "../ml-latest/ratings.csv", 3);
+    const recommended_movies = await main(movies, ratings_path, 3);
     let i = 0;
 
     while(recommended_movies.length > i) {
-        const final_movie = await id_to_name(recommended_movies[i][0]);
+        const final_movie = await id_to_name(recommended_movies[i][0], movies_path);
         const answer = await rl.question(`Wadduya say about ${final_movie?.movie_title},  (y/n)`);
         if(answer === "y") {
             break;
@@ -47,4 +51,4 @@ const rl = readline.createInterface({ input, output });
     rl.close();
 }
 
-main_interface();
+main_interface("../ml-latest/movies.csv", "../ml-latest/ratings.csv");
