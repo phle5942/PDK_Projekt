@@ -3,6 +3,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { name_to_id } from "./name_to_id";
 import {main} from "./main"
 import { id_to_name } from "./id_to_movie_name";
+
 async function main_interface() {
     
 const rl = readline.createInterface({ input, output });
@@ -30,10 +31,9 @@ const rl = readline.createInterface({ input, output });
     }
     
     console.log("Please wait, calculating...")
-    const recommended_movies = await main(movies);
+    const recommended_movies = await main(movies, "../ml-latest/ratings.csv", 3);
     let i = 0;
 
-    //const r2 = readline.createInterface({ input, output });
     while(recommended_movies.length > i) {
         const final_movie = await id_to_name(recommended_movies[i][0]);
         const answer = await rl.question(`Wadduya say about ${final_movie?.movie_title},  (y/n)`);

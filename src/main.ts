@@ -49,17 +49,28 @@ const simTable = hash.ph_empty<User, number>(330975, hash.hash_id);
 const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 
 
-///////////////////////////////////////////////////7
-function getRelevantUsers(movies: Array<Movie>): Promise<void> {
+///////////////////////////////////////////////////
+ /* param 
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  *
+  */
+function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    // set boolean to keep track of relevant users
+    // set number to keep track of relevant users
     let counter = 0;
 
     // keep track of current user, this assumes the file is sorted with regards to users
     let currentUser: User = -1;
     let currentUserArray: MovieArray = [];
 
-    fs.createReadStream("../ml-latest/ratings.csv")
+    fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row : {userId : number, movieId : number, rating : number}) => {
         const user: User = Number(row.userId);
@@ -68,10 +79,9 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 
         // when coming across new user, check if last user is relevant or not
         if (user !== currentUser && user !== -1) {
-          if (counter >= 3) {
+          if (counter >= minNumber) {
             hash.ph_insert(userMovieTable, currentUser, currentUserArray);
           }
-          //hasSeen = false;
           counter = 0;
           currentUserArray = [];
         }
@@ -98,15 +108,28 @@ function getRelevantUsers(movies: Array<Movie>): Promise<void> {
 }
   
 /**
+ * Takes as input an array of movies, a filepath to a dataset and the minimum number of movies 
+ * that an dataset user has to have in common. It returns a Promise with an array of a pair of 
+ * a movie and the score from the pathed-to dataset, with descending order according to the rating. 
  * 
- * @param inputMovies 
- * @returns 
+ * The score of a movie is determined through examining the movies of the relevant users and,
+ * based on the similarity between the user and the dataset user and the data set user's personal 
+ * movie rating, calculating a relative score.
+ * 
+ * @param inputMovies array of movies
+ * @param filePath string of a file path to a dataset with user ratings of movies
+ * @param minNumber number of movies a dataset user has to have in common to be deemed relevant
+ * @precondition 0 <= minNumber <= inputMovies.length
+ * @precondition filePath must link to a dataset with rows: userId, movieId, rating
+ * @precondition dataset must have descending order considering the userId
+ * @returns Promise with an array of pairs of a movie and the rating
+ * from the pathed dataset, with descening order according to the rating
  */
-export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, number]>>{
-  await getRelevantUsers(inputMovies);
+export async function main(inputMovies: Array<Movie>, filePath: string, minNumber: number) : Promise<Array<[Movie, number]>>{
+  await getRelevantUsers(inputMovies, filePath, minNumber);
   const keys = hash.ph_keys(userMovieTable);
 
-  // computes and adds imilarity scores for each user to simTable
+  // computes and adds similarity scores for each user to simTable
   list.for_each((key) => {
     const m_array: MovieArray | undefined = hash.ph_lookup(userMovieTable, key);
     hash.ph_insert(simTable, key, similarityScore(inputMovies, m_array));
@@ -136,6 +159,7 @@ export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, nu
   const m_keys = hash.ph_keys(movieScoreTable);
   const result_array: Array<[Movie, number]> = []
 
+  //accumulates the score for each movie
   list.for_each((key) => {
     const score = hash.ph_lookup(movieScoreTable, key);
     const count = hash.ph_lookup(movieCount, key);
@@ -143,6 +167,5 @@ export async function main(inputMovies: Array<Movie>) : Promise<Array<[Movie, nu
   }, m_keys)
 
   result_array.sort((a, b) => b[1] - a[1]);
-  console.log(result_array);
   return result_array;
 }
