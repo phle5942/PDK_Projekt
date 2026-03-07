@@ -17,14 +17,17 @@ const rl = readline.createInterface({ input, output });
   const movies: number[] = [];
     let x = 0;
     while(x < 5) {
-        const answer = await rl.question("Select : ");
-        const movie = await name_to_id(answer, movies_path);
-        if(movie !== undefined) {
-            console.log(movie);
-            const yesorno = await rl.question(`Is this the right movie? (y/n)`);
-            if(yesorno === "y") {
+        const answer = await rl.question("Select movie, 1 - 5: ");
+        const movie_list = await name_to_id(answer, movies_path);
+        if(movie_list !== undefined && movie_list.length > 0) {
+          for (let i = 0; i < movie_list.length; i = i + 1) {
+            console.log(movie_list[i]);
+            console.log(i + 1);
+        }
+            const yesorno = await rl.question(`Is this the right movie? (1-5/n)`);
+            if(['1', '2', '3', '4', '5'].includes(yesorno)) {
                 x = x + 1;
-                movies.push(movie.movie_id);
+                movies.push(movie_list[parseInt(yesorno) - 1].movie_id);
                 continue;
             }
         }

@@ -12,7 +12,7 @@ type MovieResult = {movie_id : Movie, movie_title : string, movie_genres : strin
  * @returns {Promise<MovieResult | undefined>} - a Promise, either a MovieResult (record with a Movie and two 
  * string. The Movie is the movies id and the strings are the title and the genres) or undefined.
  */
-export async function name_to_id(movie_name : string, path : string) : Promise<MovieResult | undefined>{
+export async function name_to_id(movie_name : string, path : string) : Promise<Array<MovieResult> | undefined> {
   
   //Checks if the given title is similar to the movie_name, or other way around.
   function fuzzy_search(title : string, movie_name : string) : boolean {
@@ -21,24 +21,33 @@ export async function name_to_id(movie_name : string, path : string) : Promise<M
   }
   return new Promise((resolve) => {
     
+    const resultArray: Array<MovieResult> = [];
     const stream = fs.createReadStream(path)
       .pipe(csv())
       .on("data", (row : {movieId : string, title : string, genres : string}) => { 
         const title: string = String(row.title);
-        if(fuzzy_search(title, movie_name)) { 
+          if(fuzzy_search(title, movie_name)) { 
             
             const id: number = Number(row.movieId);
             const genres: string = String(row.genres);
             const result_movie = {movie_id : id, movie_title : title, movie_genres : genres};
-            stream.destroy();
-            resolve(result_movie);
+            resultArray.push(result_movie);
+            if (resultArray.length >= 5) {
+          stream.destroy();
+        }
           }
+
       })
+        
       .on("end", () => {
-        resolve(undefined);
+        resolve(resultArray);
       })
+      .on("close", () => {
+        resolve(resultArray);
+    })
       .on("error", () => {
         resolve(undefined);
   });
+
   });
 }

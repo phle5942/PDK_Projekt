@@ -121,9 +121,9 @@ function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: num
  * based on the similarity between the user and the dataset user and the data set user's personal 
  * movie rating, calculating a relative score.
  * 
- * @param {Array<Movie>} inputMovies array of input movies
- * @param {string} filePath path to csv file containg data
- * @param {number} minNumber number of movies a dataset user has to have in common to be deemed relevant
+ * @param { Array<Movie> } inputMovies array of input movies
+ * @param { string } filePath path to csv file containg data
+ * @param { number } minNumber number of movies a dataset user has to have in common to be deemed relevant
  * @precondition 0 <= minNumber <= inputMovies.length
  * @precondition filePath must link to a dataset with rows: userId, movieId, rating
  * @precondition dataset must have descending order considering the userId
