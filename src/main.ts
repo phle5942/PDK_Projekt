@@ -20,6 +20,9 @@ export type User = number;
  * Computes the similarity score a dataset user. Based on how many of the main users movies the data set user 
  * has seen and the rating they have given the movies. The score both determines whether the data set user
  * is similar and different in movie taste to the main user. 
+ * @param { Array<Movie> } input - the movies the interface user submitted
+ * @param { MovieArray } movieArr - the movies and ratings from the the dataset user 
+ * @returns { number } - the similarity score of the dataset user relative to the interface user
  */
 function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined): number { 
   if ( movieArr == undefined ) { return 0; }
