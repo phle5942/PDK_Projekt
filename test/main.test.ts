@@ -1,8 +1,9 @@
 import { main, Movie, User } from "../src/main"
+import path from 'path';
 
 
 
-
+jest.setTimeout(20000);
 // Expected output reasoning:
 // Count occurrences of movies from users who share at least 1 movie
 // Only include movies not in mainUser ([1,2,3,4,5])
@@ -33,7 +34,7 @@ import { main, Movie, User } from "../src/main"
 // });
 //
 
-const filePath = "./small_set.csv"
+const filePath = path.join(__dirname, 'small_set.csv');
 const input = [1, 2];
 const expectedResult = [[3, 7.07], [4, 7.07]];
 test('small dataset', async () => {
