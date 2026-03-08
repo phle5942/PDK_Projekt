@@ -16,7 +16,7 @@ export type User = number;
 
 
 // simle hash function
-export function hash_func(value: string | number): number {
+export function hash_func(value: string | number): number { 
   const string = value.toString();
   let hashed_result = 0;
   for (let i = 0; i < string.length; i = i + 1) {

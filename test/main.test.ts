@@ -1,4 +1,4 @@
-import { main, Movie, User, getRelevantUsers, Movie_Array, similarity_score, Movie_Rating} from "../src/main"
+import { main, Movie, User, getRelevantUsers, Movie_Array, similarity_score, Movie_Rating, hash_func} from "../src/main"
 import path from 'path';
 import * as hash from "../lib/hashtables";
 import * as list from "../lib/list";
@@ -40,9 +40,19 @@ test("similarity score works", () => {
 
   const movie_arr1 : Movie_Array = [movie_rating1, movie_rating2, movie_rating3, movie_rating4];
   const movie_arr2 : Movie_Array = [movie_rating5, movie_rating6, movie_rating7];
+  const movie_arr3 : Movie_Array = [];
+  const movie_arr4 = undefined;
   const sim_score1 = similarity_score(input, movie_arr1);
   const sim_score2 = similarity_score(input, movie_arr2);
+  const sim_score3 = similarity_score(input, movie_arr3);
+  const sim_score4 = similarity_score(input, movie_arr4);
 
   expect(sim_score1).toBeGreaterThan(0);
   expect(sim_score2).toBeLessThan(0);
+  expect(sim_score3).toEqual(0);
+  expect(sim_score4).toEqual(0);
+})
+
+test("", () => {
+
 })
