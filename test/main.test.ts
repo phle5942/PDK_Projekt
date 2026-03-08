@@ -20,6 +20,14 @@ test('small dataset', async () => {
   }
 });
 
+test('no user has watched any relevant movies', async () => {
+  const input = [10, 20];
+  const result = await main(input, filePath, 2);
+
+  expect(result.length).toBe(0);
+  expect(result).toStrictEqual([]);
+});
+
 test("get_relevant_users works", async () => {
   const h_table : hash.ProbingHashtable<number, Movie_Array> = hash.ph_empty(2, hash.hash_id);
   await getRelevantUsers(input, filePath, 1, h_table);
@@ -46,3 +54,8 @@ test("similarity score works", () => {
   expect(sim_score1).toBeGreaterThan(0);
   expect(sim_score2).toBeLessThan(0);
 })
+
+test("Input empty array to main", async () => {
+  const result = await main([], filePath, 3);
+  expect(result).toStrictEqual([]);
+});
