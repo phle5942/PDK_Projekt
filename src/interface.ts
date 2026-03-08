@@ -17,17 +17,17 @@ const rl = readline.createInterface({ input, output });
   const movies: number[] = [];
     let x = 0;
     while(x < 5) {
-        const answer = await rl.question("Select movie, 1 - 5: ");
+        const answer = await rl.question("Search movie: ");
         const movie_list = await name_to_id(answer, movies_path);
         if(movie_list !== undefined && movie_list.length > 0) {
           for (let i = 0; i < movie_list.length; i = i + 1) {
             console.log(movie_list[i]);
             console.log(i + 1);
         }
-            const yesorno = await rl.question(`Is this the right movie? (1-5/n)`);
-            if(['1', '2', '3', '4', '5'].includes(yesorno)) {
+            const selected_movie = await rl.question(`Which is the right movie? (1-5/n) `);
+            if(['1', '2', '3', '4', '5'].includes(selected_movie)) {
                 x = x + 1;
-                movies.push(movie_list[parseInt(yesorno) - 1].movie_id);
+                movies.push(movie_list[parseInt(selected_movie) - 1].movie_id);
                 continue;
             }
         }
@@ -43,7 +43,7 @@ const rl = readline.createInterface({ input, output });
 
     while(recommended_movies.length > i) {
         const final_movie = await id_to_name(recommended_movies[i][0], movies_path);
-        const answer = await rl.question(`Wadduya say about ${final_movie?.movie_title},  (y/n)`);
+        const answer = await rl.question(`Wadduya say about ${final_movie?.movie_title},  (y/n) `);
         if(answer === "y") {
             break;
         } else {

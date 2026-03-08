@@ -3,10 +3,7 @@ import * as hash from "../lib/hashtables"
 import * as fs from "fs"
 import csv from "csv-parser"
 
-/////TODO
-//Funktionsspec, testcases, hashfunktion, rapport, diary
-
-export type MovieArray = Array<{
+export type Movie_Array = Array<{
   movie: Movie;
   rating: Rating;
 }>
@@ -21,37 +18,28 @@ export type User = number;
  * has seen and the rating they have given the movies. The score both determines whether the data set user
  * is similar and different in movie taste to the main user. 
  * @param { Array<Movie> } input - the movies the interface user submitted
- * @param { MovieArray } movieArr - the movies and ratings from the the dataset user 
+ * @param { Movie_Array } movie_arr - the movies and ratings from the the dataset user 
  * @returns { number } - the similarity score of the dataset user relative to the interface user
  */
-function similarityScore(input: Array<Movie>, movieArr: MovieArray | undefined): number { 
-  if ( movieArr == undefined ) { return 0; }
-  let relevantMoviesWatched = 0;
-  let totalRating = 0;
+function similarity_score(input: Array<Movie>, movie_arr: Movie_Array | undefined): number { 
+  if ( movie_arr == undefined ) { return 0; }
+  let relevant_movies_watched = 0;
+  let total_rating = 0;
 
-  for (let i = 0; i < movieArr.length; i = i + 1) {
-    if (input.includes(movieArr[i].movie)) {
-      relevantMoviesWatched = relevantMoviesWatched + 1;
-      totalRating = totalRating + (movieArr[i].rating - 2.5);
+  for (let i = 0; i < movie_arr.length; i = i + 1) {
+    if (input.includes(movie_arr[i].movie)) {
+      relevant_movies_watched = relevant_movies_watched + 1;
+      total_rating = total_rating + (movie_arr[i].rating - 2.5);
     }
   }
-  if(relevantMoviesWatched === 0) return 0;
-  return (totalRating / relevantMoviesWatched) * relevantMoviesWatched ** 0.5; 
+  if(relevant_movies_watched === 0) return 0;
+  return (total_rating / relevant_movies_watched) * relevant_movies_watched ** 0.5; 
 }
 
 // Returns how much a specific users "vote" counts.
 function assign_weight(similarity: number, rating: number): number {
-  return similarity < 0 ? (rating - 2.5) * (-similarity) : (rating - 2.5) * similarity;
+  return (rating - 2.5) * similarity;
 }
-
-// init hashtable for relevant users
-const userMovieTable = hash.ph_empty<User, MovieArray>(330975, hash.hash_id);
-/// init hashtable for movie and score
-const movieScoreTable = hash.ph_empty<Movie, number>(288983, hash.hash_id);
-// init hashtable for keeping trrack of users similarity score
-const simTable = hash.ph_empty<User, number>(330975, hash.hash_id);
-// init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
-const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
 
 /** 
   * Takes the data from a CSV file of the format userId, movieId, rating
@@ -59,41 +47,41 @@ const movieCount = hash.ph_empty<Movie, number>(288983, hash.hash_id);
   * and adds them to a hashtable, where key is userId and value is { movie, rating }
   *
   * @param { Array<Movie> } movies - array of input movies
-  * @param { string } filePath - path to csv file containg data
-  * @param { number } minNumber - amount of movies a user has to have watched 
+  * @param { string } file_path - path to csv file containg data
+  * @param { number } min_number - amount of movies a user has to have watched 
   *   to get added to the hashtable
   *
   * @precondition csv file is sorted by userId
   * @complexity Theta(n), where n is length of CSV file
   */
-function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: number): Promise<void> {
+function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number,Movie_Array>): Promise<void> {
   return new Promise((resolve, reject) => {
     // set number to keep track of relevant users
     let counter = 0;
 
     // keep track of current user, this assumes the file is sorted with regards to users
-    let currentUser: User = -1;
-    let currentUserArray: MovieArray = [];
+    let current_user: User = -1;
+    let current_user_array: Movie_Array = [];
 
-    fs.createReadStream(filePath)
+    fs.createReadStream(file_path)
       .pipe(csv())
-      .on("data", (row : {userId : number, movieId : number, rating : number}) => {
+      .on("data", (row : {userId : number, movieId : number, rating : number}) => { //camelcase because of csv-file
         const user: User = Number(row.userId);
         const movie: Movie = Number(row.movieId);
         const rating: Rating = Number(row.rating);
 
         // when coming across new user, check if last user is relevant or not
-        if (user !== currentUser && user !== -1) {
-          if (counter >= minNumber) {
-            hash.ph_insert(userMovieTable, currentUser, currentUserArray);
+        if (user !== current_user && user !== -1) {
+          if (counter >= min_number) {
+            hash.ph_insert(user_movie_table, current_user, current_user_array);
           }
           counter = 0;
-          currentUserArray = [];
+          current_user_array = [];
         }
 
         // sets currentuser and pushes movies to temp array
-        currentUser = user;
-          currentUserArray.push({ movie, rating })
+        current_user = user;
+          current_user_array.push({ movie, rating })
 
         // sets the amount of times the user has seen one of the input movies
         for(let i = 0; i < movies.length; i = i + 1) {
@@ -103,8 +91,8 @@ function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: num
       })
       .on("end", () => {
         // adds the last user
-        if(counter >= 3) {
-          hash.ph_insert(userMovieTable, currentUser, currentUserArray);
+        if(counter >= min_number) {
+          hash.ph_insert(user_movie_table, current_user, current_user_array);
         }
         resolve();
       })
@@ -121,53 +109,65 @@ function getRelevantUsers(movies: Array<Movie>, filePath: string, minNumber: num
  * based on the similarity between the user and the dataset user and the data set user's personal 
  * movie rating, calculating a relative score.
  * 
- * @param { Array<Movie> } inputMovies array of input movies
- * @param { string } filePath path to csv file containg data
- * @param { number } minNumber number of movies a dataset user has to have in common to be deemed relevant
+ * @param { Array<Movie> } input_movies array of input movies
+ * @param { string } file_path path to csv file containg data
+ * @param { number } min_number number of movies a dataset user has to have in common to be deemed relevant
  * @precondition 0 <= minNumber <= inputMovies.length
  * @precondition filePath must link to a dataset with rows: userId, movieId, rating
  * @precondition dataset must have descending order considering the userId
  * @returns Promise with an array of pairs of a movie and the rating
  * from the pathed dataset, with descening order according to the rating
  */
-export async function main(inputMovies: Array<Movie>, filePath: string, minNumber: number) : Promise<Array<[Movie, number]>>{
-  await getRelevantUsers(inputMovies, filePath, minNumber);
-  const keys = hash.ph_keys(userMovieTable);
+export async function main(input_movies: Array<Movie>, file_path: string, min_number: number) : Promise<Array<[Movie, number]>>{
+    
+  // init hashtable for relevant users
+  const user_movie_table = hash.ph_empty<User, Movie_Array>(330975, hash.hash_id);
+  /// init hashtable for movie and score
+  const movie_score_table = hash.ph_empty<Movie, number>(288983, hash.hash_id);
+  // init hashtable for keeping trrack of users similarity score
+  const sim_table = hash.ph_empty<User, number>(330975, hash.hash_id);
+  // init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
+  const movie_count = hash.ph_empty<Movie, number>(288983, hash.hash_id);
+
+  await getRelevantUsers(input_movies, file_path, min_number, user_movie_table);
+  const keys = hash.ph_keys(user_movie_table);
 
   // computes and adds similarity scores for each user to simTable
   list.for_each((key) => {
-    const m_array: MovieArray | undefined = hash.ph_lookup(userMovieTable, key);
-    hash.ph_insert(simTable, key, similarityScore(inputMovies, m_array));
+    const m_array: Movie_Array | undefined = hash.ph_lookup(user_movie_table, key);
+    const sim_score = similarity_score(input_movies, m_array);
+    if(sim_score > 0) hash.ph_insert(sim_table, key, sim_score);
   }, keys);
 
   //for every user and all their movies, accumulate the score for each movie, depending on how much we trust the users opinion
   list.for_each((key) => {
-    const simScore = hash.ph_lookup(simTable, key);
-    const movie_arr = hash.ph_lookup(userMovieTable, key);
+    const sim_score = hash.ph_lookup(sim_table, key);
+    const movie_arr = hash.ph_lookup(user_movie_table, key);
+
+    if(sim_score === undefined) return;
 
     for (let i = 0; i < movie_arr!.length; i = i + 1) {
-      const currentMovie = movie_arr![i].movie;
-      if(inputMovies.includes(currentMovie)) continue;
+      const current_movie = movie_arr![i].movie;
+      if(input_movies.includes(current_movie)) continue;
       const rating = movie_arr![i].rating;
-      const vote = assign_weight(simScore!, rating);
+      const vote = assign_weight(sim_score!, rating);
 
-      const prevScore = hash.ph_lookup(movieScoreTable, currentMovie);
-        hash.ph_insert(movieScoreTable, currentMovie, (prevScore ?? 0) + vote);
+      const current_score = hash.ph_lookup(movie_score_table, current_movie);
+        hash.ph_insert(movie_score_table, current_movie, (current_score ?? 0) + vote);
 
-      const prevCount = hash.ph_lookup(movieCount, currentMovie);
-        hash.ph_insert(movieCount, currentMovie, (prevCount ?? 0) + 1);
-      
+      const current_count = hash.ph_lookup(movie_count, current_movie);
+        hash.ph_insert(movie_count, current_movie, (current_count ?? 0) + 1);
       }
   }, keys)
 
 
-  const m_keys = hash.ph_keys(movieScoreTable);
-  const result_array: Array<[Movie, number]> = []
+  const m_keys = hash.ph_keys(movie_score_table);
+  const result_array: Array<[Movie, number]> = [];
 
   //accumulates the score for each movie
   list.for_each((key) => {
-    const score = hash.ph_lookup(movieScoreTable, key);
-    const count = hash.ph_lookup(movieCount, key);
+    const score = hash.ph_lookup(movie_score_table, key);
+    const count = hash.ph_lookup(movie_count, key);
     result_array.push([key, score! / (count! ** 0.5)]);
   }, m_keys)
 
