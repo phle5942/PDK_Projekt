@@ -1,38 +1,9 @@
-import { main, Movie, User } from "../src/main"
+import { main, Movie, User, getRelevantUsers, Movie_Array, similarity_score, Movie_Rating} from "../src/main"
 import path from 'path';
-
-
+import * as hash from "../lib/hashtables";
+import * as list from "../lib/list";
 
 jest.setTimeout(20000);
-// Expected output reasoning:
-// Count occurrences of movies from users who share at least 1 movie
-// Only include movies not in mainUser ([1,2,3,4,5])
-//
-// User 1: [6,7,8] → counts: 6:1, 7:1, 8:1
-// User 2: [9,10] → counts: 9:1, 10:1
-// User 4: [13,14] → counts: 13:1, 14:1
-// User 5: [6,7,15] → counts updated: 6:2, 7:2, 15:1
-//
-// Final counts: 6:2, 7:2, 8:1, 9:1, 10:1, 13:1, 14:1, 15:1
-// Sort descending by count
-
-// const expectedResult: [Movie, number][] = [
-//   [6, 2],
-//   [7, 2],
-//   [8, 1],
-//   [9,
-//
-//   1],
-//   [10, 1],
-//   [13, 1],
-//   [14, 1],
-//   [15, 1]
-// ];
-
-// test('', () => {
-//   expect().toEqual(expectedResult);
-// });
-//
 
 const filePath = path.join(__dirname, 'small_set.csv');
 const input = [1, 2];
@@ -48,3 +19,30 @@ test('small dataset', async () => {
 
   }
 });
+
+test("get_relevant_users works", async () => {
+  const h_table : hash.ProbingHashtable<number, Movie_Array> = hash.ph_empty(2, hash.hash_id);
+  await getRelevantUsers(input, filePath, 1, h_table);
+  const keys = hash.ph_keys(h_table);
+  const expected = [2, [1, null]];
+  expect(keys).toEqual(expected);
+})
+
+test("similarity score works", () => {
+  const movie_rating1: Movie_Rating = {movie : 1, rating : 5};
+  const movie_rating2: Movie_Rating = {movie : 2, rating : 4};
+  const movie_rating3: Movie_Rating = {movie : 3, rating : 3};
+  const movie_rating4: Movie_Rating = {movie : 4, rating : 4};
+
+  const movie_rating5: Movie_Rating = {movie : 1, rating : 0};
+  const movie_rating6: Movie_Rating = {movie : 2, rating : 2};
+  const movie_rating7: Movie_Rating = {movie : 3, rating : 4};
+
+  const movie_arr1 : Movie_Array = [movie_rating1, movie_rating2, movie_rating3, movie_rating4];
+  const movie_arr2 : Movie_Array = [movie_rating5, movie_rating6, movie_rating7];
+  const sim_score1 = similarity_score(input, movie_arr1);
+  const sim_score2 = similarity_score(input, movie_arr2);
+
+  expect(sim_score1).toBeGreaterThan(0);
+  expect(sim_score2).toBeLessThan(0);
+})

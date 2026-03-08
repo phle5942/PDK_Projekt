@@ -3,10 +3,11 @@ import * as hash from "../lib/hashtables"
 import * as fs from "fs"
 import csv from "csv-parser"
 
-export type Movie_Array = Array<{
+export type Movie_Rating = {
   movie: Movie;
   rating: Rating;
-}>
+}
+export type Movie_Array = Array<Movie_Rating>
 
 export type Movie = number;
 export type Rating = number;
@@ -21,7 +22,7 @@ export type User = number;
  * @param { Movie_Array } movie_arr - the movies and ratings from the the dataset user 
  * @returns { number } - the similarity score of the dataset user relative to the interface user
  */
-function similarity_score(input: Array<Movie>, movie_arr: Movie_Array | undefined): number { 
+export function similarity_score(input: Array<Movie>, movie_arr: Movie_Array | undefined): number { 
   if ( movie_arr == undefined ) { return 0; }
   let relevant_movies_watched = 0;
   let total_rating = 0;
@@ -54,7 +55,7 @@ function assign_weight(similarity: number, rating: number): number {
   * @precondition csv file is sorted by userId
   * @complexity Theta(n), where n is length of CSV file
   */
-function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number,Movie_Array>): Promise<void> {
+export function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number,Movie_Array>): Promise<void> {
   return new Promise((resolve, reject) => {
     // set number to keep track of relevant users
     let counter = 0;
