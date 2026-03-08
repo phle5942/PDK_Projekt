@@ -7,6 +7,10 @@ import { id_to_name } from "./id_to_movie_name";
 /**
  * Function that, once called upon, initiates a terminal interface where a user submits five movies and 
  * recieves movies based on the movies submitted.
+ * @param {string} movies_path the path to the dataset that stores movieId, movieTitle and movieGenre
+ * @param {string} ratings_path the path do the dataset that stores userId, movieId and rating
+ * @precondition movies_path stores movieId, movieTitle and movieGenre and is a csv-file
+ * @precondition ratings_path stores userId, movieId and rating and is a csv-file
  */
 async function main_interface(movies_path : string, ratings_path : string) {
     
