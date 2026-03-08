@@ -13,6 +13,17 @@ export type Rating = number;
 
 export type User = number;
 
+
+// simle hash function
+export function hash_func(value: string | number): number {
+  const string = value.toString();
+  let hashed_result = 0;
+  for (let i = 0; i < string.length; i = i + 1) {
+    hashed_result = (hashed_result << 5) - hashed_result + string.charCodeAt(i);
+  }
+  return hashed_result;
+}
+
 /**
  * Computes the similarity score a dataset user. Based on how many of the main users movies the data set user 
  * has seen and the rating they have given the movies. The score both determines whether the data set user
@@ -54,7 +65,7 @@ function assign_weight(similarity: number, rating: number): number {
   * @precondition csv file is sorted by userId
   * @complexity Theta(n), where n is length of CSV file
   */
-function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number,Movie_Array>): Promise<void> {
+function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number, Movie_Array>): Promise<void> {
   return new Promise((resolve, reject) => {
     // set number to keep track of relevant users
     let counter = 0;
@@ -121,13 +132,13 @@ function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: n
 export async function main(input_movies: Array<Movie>, file_path: string, min_number: number) : Promise<Array<[Movie, number]>>{
     
   // init hashtable for relevant users
-  const user_movie_table = hash.ph_empty<User, Movie_Array>(330975, hash.hash_id);
+  const user_movie_table = hash.ph_empty<User, Movie_Array>(330975, hash_func);
   /// init hashtable for movie and score
-  const movie_score_table = hash.ph_empty<Movie, number>(288983, hash.hash_id);
+  const movie_score_table = hash.ph_empty<Movie, number>(288983, hash_func);
   // init hashtable for keeping trrack of users similarity score
-  const sim_table = hash.ph_empty<User, number>(330975, hash.hash_id);
+  const sim_table = hash.ph_empty<User, number>(330975, hash_func);
   // init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
-  const movie_count = hash.ph_empty<Movie, number>(288983, hash.hash_id);
+  const movie_count = hash.ph_empty<Movie, number>(288983, hash_func);
 
   await getRelevantUsers(input_movies, file_path, min_number, user_movie_table);
   const keys = hash.ph_keys(user_movie_table);
