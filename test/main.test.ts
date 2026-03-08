@@ -1,8 +1,4 @@
 import { main, Movie, User } from "../src/main"
-
-
-
-
 // Expected output reasoning:
 // Count occurrences of movies from users who share at least 1 movie
 // Only include movies not in mainUser ([1,2,3,4,5])
@@ -49,5 +45,5 @@ test('small dataset', async () => {
 });
 
 test("", () => {
-  
+
 })

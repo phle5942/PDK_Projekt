@@ -12,7 +12,7 @@ async function main_interface(movies_path : string, ratings_path : string) {
     
 const rl = readline.createInterface({ input, output });
 
-  console.log("Welcome, select 5 movies");
+  console.log("Welcome, select 5 movies\n");
 
   const movies: number[] = [];
     let x = 0;
@@ -21,10 +21,9 @@ const rl = readline.createInterface({ input, output });
         const movie_list = await name_to_id(answer, movies_path);
         if(movie_list !== undefined && movie_list.length > 0) {
           for (let i = 0; i < movie_list.length; i = i + 1) {
-            console.log(movie_list[i]);
-            console.log(i + 1);
+            console.log(`Movie ${i + 1} : ${movie_list[i].movie_title} (${movie_list[i].movie_genres})`);
         }
-            const selected_movie = await rl.question(`Which is the right movie? (1-5/n) `);
+            const selected_movie = await rl.question(`\nWhich is the right movie? (1-5/n) `);
             if(['1', '2', '3', '4', '5'].includes(selected_movie)) {
                 x = x + 1;
                 movies.push(movie_list[parseInt(selected_movie) - 1].movie_id);
