@@ -1,11 +1,11 @@
 module.exports = {
-  preset: 'ts-jest',               // enables ts-jest
-  testEnvironment: 'node',         // Node runtime
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js', 'json'],
   globals: {
     'ts-jest': {
-      tsconfig: 'tsconfig.jest.json'  // points to your Jest tsconfig
+      tsconfig: 'tsconfig.jest.json'
     }
   },
-  collectCoverage: true,           // keep your coverage option
+  collectCoverage: true,
 };
