@@ -1,4 +1,4 @@
-import { main, Movie, User, getRelevantUsers, Movie_Array, similarity_score, Movie_Rating, hash_func} from "../src/main"
+import { main, Movie, User, get_relevant_users, Movie_Array, similarity_score, Movie_Rating, hash_func} from "../src/main"
 import path from 'path';
 import * as hash from "../lib/hashtables";
 import * as list from "../lib/list";
@@ -30,7 +30,7 @@ test('no user has watched any relevant movies', async () => {
 
 test("get_relevant_users works", async () => {
   const h_table : hash.ProbingHashtable<number, Movie_Array> = hash.ph_empty(2, hash.hash_id);
-  await getRelevantUsers(input, filePath, 1, h_table);
+  await get_relevant_users(input, filePath, 1, h_table);
   const keys = hash.ph_keys(h_table);
   const expected = [2, [1, null]];
   expect(keys).toEqual(expected);

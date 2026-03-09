@@ -3,20 +3,27 @@ import * as hash from "../lib/hashtables"
 import * as fs from "fs"
 import csv from "csv-parser"
 
-export type Movie_Rating = {
+export type Movie = number; // represents a movie's ID
+
+export type Rating = number; // represents a dataset user's rating of a movie (between 0-5)
+
+export type User = number; // a dataset users ID
+
+export type Movie_Rating = { // used for representing a user's rating on a specific movie
   movie: Movie;
   rating: Rating;
 }
-export type Movie_Array = Array<Movie_Rating>
-
-export type Movie = number;
-export type Rating = number;
-
-export type User = number;
+export type Movie_Array = Array<Movie_Rating> // All Movie_Ratings for a specific User
 
 
-// simle hash function
-export function hash_func(value: string | number): number { 
+
+
+/**
+ * Simlpe hash function
+ * @param {number} value - the submitted value to convert into hashed value
+ * @returns {number} - the hashed value
+ */
+export function hash_func(value: number): number { 
   const string = value.toString();
   let hashed_result = 0;
   for (let i = 0; i < string.length; i = i + 1) {
@@ -26,11 +33,12 @@ export function hash_func(value: string | number): number {
 }
 
 /**
- * Computes the similarity score a dataset user. Based on how many of the main users movies the data set user 
+ * Computes the similarity score for a dataset user. Based on how many of the main users movies the data set user 
  * has seen and the rating they have given the movies. The score both determines whether the data set user
- * is similar and different in movie taste to the main user. 
+ * is similar or different in movie taste to the main user. 
  * @param { Array<Movie> } input - the movies the interface user submitted
- * @param { Movie_Array } movie_arr - the movies and ratings from the the dataset user 
+ * @param { Movie_Array } movie_arr - the movies and ratings from the dataset user 
+ * @complexity - Theta(n) - where n i length of movie_arr
  * @returns { number } - the similarity score of the dataset user relative to the interface user
  */
 export function similarity_score(input: Array<Movie>, movie_arr: Movie_Array | undefined): number { 
@@ -62,11 +70,14 @@ function assign_weight(similarity: number, rating: number): number {
   * @param { string } file_path - path to csv file containg data
   * @param { number } min_number - amount of movies a user has to have watched 
   *   to get added to the hashtable
-  *
+  * @complexity Theta(n) - where n is the amount of lines in the csv-file
+  * @precondition file_path leads to a csv-file
   * @precondition csv file is sorted by userId
   * @complexity Theta(n), where n is length of CSV file
   */
-export function getRelevantUsers(movies: Array<Movie>, file_path: string, min_number: number, user_movie_table : hash.ProbingHashtable<number, Movie_Array>): Promise<void> {
+export function get_relevant_users(movies: Array<Movie>, file_path: string,
+            min_number: number, user_movie_table : hash.ProbingHashtable<number, Movie_Array>) : Promise<void> {
+
   return new Promise((resolve, reject) => {
     // set number to keep track of relevant users
     let counter = 0;
@@ -125,12 +136,14 @@ export function getRelevantUsers(movies: Array<Movie>, file_path: string, min_nu
  * @param { string } file_path path to csv file containg data
  * @param { number } min_number number of movies a dataset user has to have in common to be deemed relevant
  * @precondition 0 <= minNumber <= inputMovies.length
- * @precondition filePath must link to a dataset with rows: userId, movieId, rating
+ * @precondition filePath must link to a csv dataset with rows: userId, movieId, rating
  * @precondition dataset must have descending order considering the userId
+ * @complexity Theta(n + m) - n = keys.length, m = lines in filepath-file
  * @returns Promise with an array of pairs of a movie and the rating
  * from the pathed dataset, with descening order according to the rating
  */
-export async function main(input_movies: Array<Movie>, file_path: string, min_number: number) : Promise<Array<[Movie, number]>>{
+export async function main(input_movies: Array<Movie>, file_path: string,
+                           min_number: number) : Promise<Array<[Movie, number]>>{
     
   // init hashtable for relevant users
   const user_movie_table = hash.ph_empty<User, Movie_Array>(330975, hash_func);
@@ -141,7 +154,7 @@ export async function main(input_movies: Array<Movie>, file_path: string, min_nu
   // init hashtable for keeping track of how many times a movie was rated to handle not recomending always popular mopvies
   const movie_count = hash.ph_empty<Movie, number>(288983, hash_func);
 
-  await getRelevantUsers(input_movies, file_path, min_number, user_movie_table);
+  await get_relevant_users(input_movies, file_path, min_number, user_movie_table);
   const keys = hash.ph_keys(user_movie_table);
 
   // computes and adds similarity scores for each user to simTable

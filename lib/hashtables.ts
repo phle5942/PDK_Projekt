@@ -288,18 +288,6 @@ export function ph_delete<K, V>(ht: ProbingHashtable<K,V>, key: K): V | undefine
  * @param xs a list with nulls and undefined values
  * @returns the input list without nulls and undefined values
  */
-function filterNulls<T>(xs:List<T | undefined | null>): List<T> {
-    if (is_null(xs)) {
-        return null;
-    } else {
-        const x = head(xs);
-        if (x === undefined || x === null) {
-            return filterNulls(tail(xs));
-        } else {
-            return pair(x, filterNulls(tail(xs)));
-        }
-    }
-}
 function filterNulls_it<T>(xs: List<T | undefined | null>): List<T> {
   const tmp: T[] = [];
   while (!is_null(xs)) {
@@ -314,6 +302,12 @@ function filterNulls_it<T>(xs: List<T | undefined | null>): List<T> {
   }
   return out;
 }
+/**
+ * @template T the element type of the resulting list
+ * @param fun function
+ * @param n length of the desired list
+ * @returns 
+ */
 function build_list_it<T>(fun: (i: number) => T, n: number): List<T> {
   let already_built: List<T> = null;
   for (let i = n - 1; i >= 0; i--) {

@@ -2,7 +2,7 @@
   "name": "pdk_projekt",
   "type": "commonjs",
   "scripts": {
-    "test:manual": "ts-node --esm test/ph.test.ts"
+    "main": "tsc -p . && node dist/src/interface.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -10,5 +10,8 @@
     "ts-jest": "^29.4.6",
     "ts-node": "^10",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "csv-parser": "^3.2.0"
   }
 }
